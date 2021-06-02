@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    Dwarf: A PICKit 2 GUI for Linux
@@ -18,9 +18,11 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import pygtk
-pygtk.require("2.0")
-import gtk, gobject
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+from gi.repository import Gdk
+
 from subprocess import Popen, PIPE
 import os, sys, getopt
 
@@ -31,12 +33,12 @@ APP_FOLDER = sys.path[0]
 # If you want to run the pk2cmd app as sudo add sudo here
 PK2CMD = "pk2cmd"
 
-class MainWindow(gtk.Window):
+class MainWindow(Gtk.Window):
   """ Main toolbar-like small window with buttons """
   def __init__(self,verbosity):
     self.verbosity = verbosity
     # setup the main window
-    gtk.Window.__init__(self, type=gtk.WINDOW_TOPLEVEL)
+    Gtk.Window.__init__(self)
     self.set_title("Dwarf %s" % VERSION)
 
     # keep track of readiness, only enable programming buttons if a file has
@@ -47,116 +49,116 @@ class MainWindow(gtk.Window):
 
     self.set_icon_from_file(os.path.join(APP_FOLDER, "data/icon.png"))
     self.connect("destroy", self.destroy_cb)
-    self.layout=gtk.VBox()
+    self.layout=Gtk.VBox()
 
-    self.bar_layout = gtk.HBox()
-    self.button_layout = gtk.HBox()
+    self.bar_layout = Gtk.HBox()
+    self.button_layout = Gtk.HBox()
 
     # build file selector
-    self.open_btn = gtk.Button(None, gtk.STOCK_OPEN)
+    self.open_btn = Gtk.Button(None, Gtk.STOCK_OPEN)
     self.open_btn.connect("clicked", self.open_cb)
-    self.bar_layout.pack_start(self.open_btn)
+    self.bar_layout.pack_start(self.open_btn, expand=True, fill=True, padding=0)
     self.source_file = ""
 
     # add a model selector
-    self.model = gtk.Label()
-    self.model_bg = gtk.Frame()
-    self.model_bg_bg = gtk.EventBox()
+    self.model = Gtk.Label()
+    self.model_bg = Gtk.Frame()
+    self.model_bg_bg = Gtk.EventBox()
     self.model_bg_bg.add(self.model_bg)
-    self.model_bg_bg.modify_bg(gtk.STATE_NORMAL, 
-                            gtk.gdk.Color(65535, 65535, 65535))
+    self.model_bg_bg.modify_bg(Gtk.StateFlags.NORMAL, 
+                            Gdk.Color(65535, 65535, 65535))
     self.model.set_size_request(100,-1)
     self.model.set_text("(none)")
     self.model_bg.add(self.model)
-    self.bar_layout.pack_start(self.model_bg_bg)
+    self.bar_layout.pack_start(self.model_bg_bg, expand=True, fill=True, padding=0)
 
     # assemble a set of image buttons
     # Auto-detect PIC button
-    self.auto_pb = gtk.Image()
+    self.auto_pb = Gtk.Image()
     self.auto_pb.set_from_file(os.path.join(APP_FOLDER, "data/auto.png"))
-    self.auto_btn = gtk.Button()
+    self.auto_btn = Gtk.Button()
     self.auto_btn.set_image(self.auto_pb)
     self.auto_btn.connect("clicked", self.auto_cb)
-    self.button_layout.pack_start(self.auto_btn)
+    self.button_layout.pack_start(self.auto_btn, expand=True, fill=True, padding=0)
 
     # Manual connect button
-    #self.manual_pb = gtk.Image()
+    #self.manual_pb = Gtk.Image()
     #self.manual_pb.set_from_file("data/manual.png")
-    #self.manual_btn = gtk.Button()
+    #self.manual_btn = Gtk.Button()
     #self.manual_btn.set_image(self.manual_pb)
     #self.manual_btn.connect("clicked", self.manual_cb)
-    #self.button_layout.pack_start(self.manual_btn)
-        
+    #self.button_layout.pack_start(self.manual_btn, expand=True, fill=True, padding=0)
+
     # program
-    self.program_pb = gtk.Image()
+    self.program_pb = Gtk.Image()
     self.program_pb.set_from_file(os.path.join(APP_FOLDER, "data/program.png"))
-    self.program_btn = gtk.Button()
+    self.program_btn = Gtk.Button()
     self.program_btn.set_image(self.program_pb)
     self.program_btn.connect("clicked", self.program_cb)
     self.program_btn.set_sensitive(False)               # disable until connect
-    self.button_layout.pack_start(self.program_btn)
-        
+    self.button_layout.pack_start(self.program_btn, expand=True, fill=True, padding=0)
+
     # Read
-    self.read_pb = gtk.Image()
+    self.read_pb = Gtk.Image()
     self.read_pb.set_from_file(os.path.join(APP_FOLDER, "data/read.png"))
-    self.read_btn = gtk.Button()
+    self.read_btn = Gtk.Button()
     self.read_btn.set_image(self.read_pb)
     self.read_btn.connect("clicked", self.read_cb)
     self.read_btn.set_sensitive(False)                  # disable until connect
-    self.button_layout.pack_start(self.read_btn)
-      
+    self.button_layout.pack_start(self.read_btn, expand=True, fill=True, padding=0)
+
     # run
-    self.run_pb = gtk.Image()
+    self.run_pb = Gtk.Image()
     self.run_pb.set_from_file(os.path.join(APP_FOLDER, "data/run.png"))
-    self.run_btn = gtk.Button()
+    self.run_btn = Gtk.Button()
     self.run_btn.set_image(self.run_pb)
     self.run_btn.connect("clicked", self.run_cb)
     self.run_btn.set_sensitive(False)                   # disable until connect
-    self.button_layout.pack_start(self.run_btn)
+    self.button_layout.pack_start(self.run_btn, expand=True, fill=True, padding=0)
 
     # stop
-    self.stop_pb = gtk.Image()
+    self.stop_pb = Gtk.Image()
     self.stop_pb.set_from_file(os.path.join(APP_FOLDER, "data/stop.png"))
-    self.stop_btn = gtk.Button()
+    self.stop_btn = Gtk.Button()
     self.stop_btn.set_image(self.stop_pb)
     self.stop_btn.connect("clicked", self.stop_cb)
     self.stop_btn.set_sensitive(False)                  # disable until connect
-    self.button_layout.pack_start(self.stop_btn)
+    self.button_layout.pack_start(self.stop_btn, expand=True, fill=True, padding=0)
 
     # exit
-    self.exit_btn = gtk.Button(None, gtk.STOCK_QUIT)
+    self.exit_btn = Gtk.Button(None, Gtk.STOCK_QUIT)
     self.exit_btn.connect("clicked", self.destroy_cb)
-    self.button_layout.pack_start(self.exit_btn)
+    self.button_layout.pack_start(self.exit_btn, expand=True, fill=True, padding=0)
 
     # set the root layout
-    self.bar_layout.pack_end(self.button_layout, expand=False)
-    self.layout.pack_start(self.bar_layout)
-        
+    self.bar_layout.pack_end(self.button_layout, expand=False, fill=True, padding=0)
+    self.layout.pack_start(self.bar_layout, expand=True, fill=True, padding=0)
+
     # add a status label
-    self.status_label = gtk.Label("Status: OK")
-    self.status_bg = gtk.EventBox()
+    self.status_label = Gtk.Label("Status: OK")
+    self.status_bg = Gtk.EventBox()
     self.status_bg.add(self.status_label)
     self.status_msg = ""    # the detailed message presented when details is
                             # clicked.
 
-    self.status_btn = gtk.Button("Details")
+    self.status_btn = Gtk.Button("Details")
     self.status_btn.set_size_request(50,-1)
-    self.status_layout = gtk.HBox()
-    self.status_layout.pack_start(self.status_bg)
-    self.status_layout.pack_start(self.status_btn, expand=False)
+    self.status_layout = Gtk.HBox()
+    self.status_layout.pack_start(self.status_bg, expand=True, fill=True, padding=0)
+    self.status_layout.pack_start(self.status_btn, expand=False, fill=True, padding=0)
     self.status_btn.set_sensitive(False)
     self.status_btn.connect("clicked", self.status_popup_cb)
 
-    self.layout.pack_start(self.status_layout, expand=False)
+    self.layout.pack_start(self.status_layout, expand=False, fill=True, padding=0)
 
     self.add(self.layout)
     self.show_all()
 
     # make a list of colours for the status label
     self.colours = {}
-    self.colours["red"] = gtk.gdk.Color(65535,0,0)
-    self.colours["green"] = gtk.gdk.Color(0,65535,0)
-    self.colours["yellow"] = gtk.gdk.Color(65535,65535,0)
+    self.colours["red"] = Gdk.Color(65535,0,0)
+    self.colours["green"] = Gdk.Color(0,65535,0)
+    self.colours["yellow"] = Gdk.Color(65535,65535,0)
 
     # make a pickit class to control the programmer
     self.prog = PicKit(self, self.verbosity)
@@ -166,7 +168,7 @@ class MainWindow(gtk.Window):
 
   def destroy_cb(self, *kw):
     """ Destroy callback to shutdown the app """
-    gtk.main_quit()
+    Gtk.main_quit()
     return
 
   def auto_cb(self, *kw):
@@ -181,14 +183,14 @@ class MainWindow(gtk.Window):
 
   def open_cb(self, *kw):
     """ Opens a hex file for programming to the device. """
-    self.source_select = gtk.FileChooserDialog(
+    self.source_select = Gtk.FileChooserDialog(
                 "Open File",
                 self,
-                gtk.FILE_CHOOSER_ACTION_OPEN,
-                (gtk.STOCK_OPEN,
-                 gtk.RESPONSE_ACCEPT,
-                 gtk.STOCK_CANCEL,
-                 gtk.RESPONSE_CANCEL))
+                Gtk.FILE_CHOOSER_ACTION_OPEN,
+                (Gtk.STOCK_OPEN,
+                 Gtk.ResponseType.ACCEPT,
+                 Gtk.STOCK_CANCEL,
+                 Gtk.ResponseType.CANCEL))
     # set the starting folder for the open dialog
     if self.source_file == "":
       # if no file is selected yet, start in home folder
@@ -199,11 +201,11 @@ class MainWindow(gtk.Window):
               os.path.split(self.source_file)[0])
 
     # make up filters for hex files and all files
-    self.filter_hex = gtk.FileFilter()
+    self.filter_hex = Gtk.FileFilter()
     self.filter_hex.set_name("HEX Files")
     self.filter_hex.add_pattern("*.hex")
     self.source_select.add_filter(self.filter_hex)
-    self.filter_all = gtk.FileFilter()
+    self.filter_all = Gtk.FileFilter()
     self.filter_all.set_name("All Files")
     self.filter_all.add_pattern("*")
     self.source_select.add_filter(self.filter_all)
@@ -214,9 +216,9 @@ class MainWindow(gtk.Window):
     self.source_select.show()
     self.set_sensitive(False)
     return
- 
+
   def open_file_cb(self, widget, response):
-    if response == gtk.RESPONSE_ACCEPT:
+    if response == Gtk.ResponseType.ACCEPT:
       # user made a choice
       self.source_file = self.source_select.get_filename()
       self.update_active('file', True)
@@ -242,14 +244,14 @@ class MainWindow(gtk.Window):
   def read_cb(self, *kw):
     """ Read from the device """
     # make a file select dialog popup to select where to save to
-    self.save_chooser = gtk.FileChooserDialog(
+    self.save_chooser = Gtk.FileChooserDialog(
               "Save HEX dump to...",            # Title 
               self,                             # Parent
-              gtk.FILE_CHOOSER_ACTION_SAVE,     # Dialog mode
-              (gtk.STOCK_OPEN,                  # Open button
-               gtk.RESPONSE_ACCEPT,             # Returns Accept response
-               gtk.STOCK_CANCEL,                # Cancel button
-               gtk.RESPONSE_CANCEL))            # Returns Cancel response
+              Gtk.FileChooserAction.SAVE,     # Dialog mode
+              (Gtk.STOCK_OPEN,                  # Open button
+               Gtk.ResponseType.ACCEPT,             # Returns Accept response
+               Gtk.STOCK_CANCEL,                # Cancel button
+               Gtk.ResponseType.CANCEL))            # Returns Cancel response
     self.save_chooser.connect("response", self.read_selected_cb)
     self.save_chooser.set_do_overwrite_confirmation(True)
     self.save_chooser.show()
@@ -257,14 +259,14 @@ class MainWindow(gtk.Window):
     return
 
   def read_selected_cb(self, widget, response_id):
-    if response_id in (gtk.RESPONSE_CLOSE, -4):
+    if response_id in (Gtk.ResponseType.CLOSE, -4):
       self.set_sensitive(True)
       del self.save_chooser
-    elif response_id == gtk.RESPONSE_CANCEL:
+    elif response_id == Gtk.ResponseType.CANCEL:
       self.set_sensitive(True)
       self.save_chooser.destroy()
       del self.save_chooser
-    elif response_id == gtk.RESPONSE_ACCEPT:
+    elif response_id == Gtk.ResponseType.ACCEPT:
       self.prog.read_device(widget.get_filename())
       self.save_chooser.destroy()
       del self.save_chooser
@@ -290,7 +292,7 @@ class MainWindow(gtk.Window):
     # do status
     self.show_status("OK, selected a binary file.", "green", False)
     if self.verbosity:
-      print "File chosen:", self.source_file
+      print(("File chosen:", self.source_file))
     return
 
   def status_popup_cb(self, *kw):
@@ -302,7 +304,7 @@ class MainWindow(gtk.Window):
 
   def status(self, msg, details, colour):
     self.status_label.set_text(msg)
-    self.status_bg.modify_bg(gtk.STATE_NORMAL, self.colours[colour])
+    self.status_bg.modify_bg(Gtk.StateFlags.NORMAL, self.colours[colour])
     self.status_msg = details
     if details != "":
       self.status_btn.set_sensitive(True)
@@ -319,21 +321,21 @@ class MainWindow(gtk.Window):
     self.run_btn.set_sensitive(self.ready['device'])
     return
 
-class Status_popup(gtk.Window):
+class Status_popup(Gtk.Window):
   def __init__(self):
-    gtk.Window.__init__(self)
+    Gtk.Window.__init__(self)
     self.set_title("Dwarf: Status Messages")
     self.set_icon_from_file(os.path.join(APP_FOLDER, "data/icon.png"))
     self.connect("destroy", self.destroy_cb)
 
-    self.layout = gtk.VBox()
-    self.text_view = gtk.Label()
-    self.layout.pack_start(self.text_view)
-    self.close_btn = gtk.Button("Close")
+    self.layout = Gtk.VBox()
+    self.text_view = Gtk.Label()
+    self.layout.pack_start(self.text_view, expand=True, fill=True, padding=0)
+    self.close_btn = Gtk.Button("Close")
     self.close_btn.connect("clicked", self.close_btn_cb)
-    self.close_layout = gtk.HBox()
-    self.close_layout.pack_end(self.close_btn, expand=False)
-    self.layout.pack_start(self.close_layout, expand=False)
+    self.close_layout = Gtk.HBox()
+    self.close_layout.pack_end(self.close_btn, expand=False, fill=True, padding=0)
+    self.layout.pack_start(self.close_layout, expand=False, fill=True, padding=0)
     self.add(self.layout)
     self.show_all()
     return
@@ -353,10 +355,10 @@ class PicKit:
     self.verbosity = verbosity
     self.cmd = PK2CMD
     self.parent = parent
-    
+
   def set_device(self, device):
     self._device = device
-    
+
   def get_device(self, device):
     return self._device
 
@@ -369,8 +371,8 @@ class PicKit:
       self.parent.model.set_text("(none)")
       self.parent.status("pk2cmd not installed!!!", "", "red")
       self.parent.update_active('device', False)
-      self.msg = gtk.MessageDialog(parent=self.parent,
-                                   buttons=gtk.BUTTONS_CLOSE,
+      self.msg = Gtk.MessageDialog(parent=self.parent,
+                                   buttons=Gtk.BUTTONS_CLOSE,
                                    message_format=(
       "The pk2cmd command line program needs to be installed before you can " +
       "access the PIC from this application.  For instructions on installing" +
@@ -384,7 +386,7 @@ class PicKit:
 
     opts = ["-P"]
     output = self._run_command(opts)
-     
+
     if output.find("No PICkit 2 found.") > -1:
       # the PICKit wasn't found so de-activate the related functions
       self.device = ""
@@ -424,7 +426,7 @@ class PicKit:
     else:
       self.parent.status("Program Failed", output, "red")
     if self.verbosity:
-      print output
+      print(output)
 
   def read_device(self, hexfile):
     opts = []
@@ -432,7 +434,7 @@ class PicKit:
     opts.append("-GF" + hexfile)
     self._run_command(opts)
     return
-        
+
   def run(self):
     opts = []
     opts.append("-P" + self.device)
@@ -450,26 +452,29 @@ class PicKit:
   def _run_command(self, args):
     cmd = self.cmd + " " + " ".join(args)
     if self.verbosity:
-      print cmd
+      print(cmd)
     pr = Popen(cmd, shell=True, stdout=PIPE)
     pr.wait()
-    output = pr.stdout.read()
-    return output
+    """Warning Use the communicate() method rather than process.stdin.write(), await process.stdout.read() or await process.stderr.read. 
+    This avoids deadlocks due to streams pausing reading or writing and blocking the child process."""
+    #output = pr.stdout.read()
+    output = pr.communicate()[0] 
+    return output.decode()
 
 def usage():
   """ Usage information printed when help is requested or the command is
       wrongly used. """
-  print "dwarf [options] [filename]"
-  print ""
-  print "Starts the Dwarf GUI application.  The optional filename is a "
-  print "standard PIC hex file which will be loaded by the application "
-  print "ready for programming on startup."
-  print ""
-  print "Options"
-  print "  -v, --verbose   Prints commands sent to PK2CMD for debugging."
-  print "  -h, --help      Prints this help information."
-  print ""
-  print """    Copyright (C) 2010  Nathan Dumont (hairymnstr@gmail.com)
+  print("dwarf [options] [filename]")
+  print("")
+  print("Starts the Dwarf GUI application.  The optional filename is a ")
+  print("standard PIC hex file which will be loaded by the application ")
+  print("ready for programming on startup.")
+  print("")
+  print("Options")
+  print("  -v, --verbose   Prints commands sent to PK2CMD for debugging.")
+  print("  -h, --help      Prints this help information.")
+  print("")
+  print("""    Copyright (C) 2010  Nathan Dumont (hairymnstr@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -482,18 +487,18 @@ def usage():
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>."""
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.""")
 
   return
 
 if __name__ == "__main__":
   try:
     optlist, args = getopt.gnu_getopt(sys.argv[1:], "vh", ["verbose", "help"])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print((str(err)))
     usage()
     sys.exit(2)
-    
+
   verbosity = False
   for o, a in optlist:
     if o in ("-h", "--help"):
@@ -506,6 +511,6 @@ if __name__ == "__main__":
   if len(args) == 1:
     main_win.set_file(args[0])
   elif len(args) > 1:
-    print "Warning, can only select one file, first argument taken."
+    print("Warning, can only select one file, first argument taken.")
 
-  gtk.main()
+  Gtk.main()
