@@ -186,7 +186,7 @@ class MainWindow(Gtk.Window):
     self.source_select = Gtk.FileChooserDialog(
                 "Open File",
                 self,
-                Gtk.FILE_CHOOSER_ACTION_OPEN,
+                Gtk.FileChooserAction.OPEN,
                 (Gtk.STOCK_OPEN,
                  Gtk.ResponseType.ACCEPT,
                  Gtk.STOCK_CANCEL,
