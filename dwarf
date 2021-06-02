@@ -54,11 +54,13 @@ class MainWindow(Gtk.Window):
     self.bar_layout = Gtk.HBox()
     self.button_layout = Gtk.HBox()
 
-    # build file selector
-    self.open_btn = Gtk.Button(None, Gtk.STOCK_OPEN)
+    # build file selector   
+    self.open_btn = Gtk.ToolButton.new(
+        Gtk.Image.new_from_icon_name("document-open", Gtk.IconSize.LARGE_TOOLBAR),
+        "Open")    
     self.open_btn.connect("clicked", self.open_cb)
     self.bar_layout.pack_start(self.open_btn, expand=True, fill=True, padding=0)
-    self.source_file = ""
+    self.source_file = ""    
 
     # add a model selector
     self.model = Gtk.Label()
@@ -82,12 +84,12 @@ class MainWindow(Gtk.Window):
     self.button_layout.pack_start(self.auto_btn, expand=True, fill=True, padding=0)
 
     # Manual connect button
-    #self.manual_pb = Gtk.Image()
-    #self.manual_pb.set_from_file("data/manual.png")
-    #self.manual_btn = Gtk.Button()
-    #self.manual_btn.set_image(self.manual_pb)
-    #self.manual_btn.connect("clicked", self.manual_cb)
-    #self.button_layout.pack_start(self.manual_btn, expand=True, fill=True, padding=0)
+#    self.manual_pb = Gtk.Image()
+#    self.manual_pb.set_from_file("data/manual.png")
+#    self.manual_btn = Gtk.Button()
+#    self.manual_btn.set_image(self.manual_pb)
+#    self.manual_btn.connect("clicked", self.manual_cb)
+#    self.button_layout.pack_start(self.manual_btn, expand=True, fill=True, padding=0)
 
     # program
     self.program_pb = Gtk.Image()
@@ -125,8 +127,10 @@ class MainWindow(Gtk.Window):
     self.stop_btn.set_sensitive(False)                  # disable until connect
     self.button_layout.pack_start(self.stop_btn, expand=True, fill=True, padding=0)
 
-    # exit
-    self.exit_btn = Gtk.Button(None, Gtk.STOCK_QUIT)
+    # exit    
+    self.exit_btn = Gtk.ToolButton.new(
+        Gtk.Image.new_from_icon_name("application-exit", Gtk.IconSize.LARGE_TOOLBAR),
+        "_Quit")        
     self.exit_btn.connect("clicked", self.destroy_cb)
     self.button_layout.pack_start(self.exit_btn, expand=True, fill=True, padding=0)
 
@@ -135,13 +139,13 @@ class MainWindow(Gtk.Window):
     self.layout.pack_start(self.bar_layout, expand=True, fill=True, padding=0)
 
     # add a status label
-    self.status_label = Gtk.Label("Status: OK")
+    self.status_label = Gtk.Label.new("Status: OK")
     self.status_bg = Gtk.EventBox()
     self.status_bg.add(self.status_label)
     self.status_msg = ""    # the detailed message presented when details is
                             # clicked.
 
-    self.status_btn = Gtk.Button("Details")
+    self.status_btn = Gtk.Button.new_with_label("Details")
     self.status_btn.set_size_request(50,-1)
     self.status_layout = Gtk.HBox()
     self.status_layout.pack_start(self.status_bg, expand=True, fill=True, padding=0)
